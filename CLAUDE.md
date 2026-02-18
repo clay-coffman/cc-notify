@@ -8,9 +8,9 @@ cc-notify is a Claude Code hooks integration that sends KDE desktop notification
 
 ## Installation
 
-Copy into a project's `.claude/` directory:
-- `cc-notify.sh` → `.claude/hooks/cc-notify.sh` (must be executable)
-- `settings.json` → merge hooks config into `.claude/settings.json`
+**Global (recommended):** Copy `cc-notify.sh` → `~/.claude/hooks/cc-notify.sh` (must be executable), then merge hooks config into `~/.claude/settings.json` using `$HOME` to resolve the script path.
+
+**Per-project:** Copy `cc-notify.sh` → `.claude/hooks/cc-notify.sh` (must be executable), then merge hooks config into `.claude/settings.json` using `$CLAUDE_PROJECT_DIR` to resolve the script path.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ Hook events handled:
 - `Stop` — task completion
 - `PostToolUseFailure` — tool errors
 
-**`settings.json`** — Claude Code hooks configuration that wires the three events to the script. Uses `$CLAUDE_PROJECT_DIR` to resolve the script path. The `Notification` hook uses a matcher to filter for `permission_prompt|idle_prompt` only.
+**`settings.json`** — Claude Code hooks configuration that wires the events to the script. Uses `$CLAUDE_PROJECT_DIR` for per-project installs or `$HOME` for global installs to resolve the script path. The `Notification` hook uses a matcher to filter for `permission_prompt|idle_prompt|elicitation_dialog`.
 
 ## Dependencies
 

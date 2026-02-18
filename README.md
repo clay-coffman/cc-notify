@@ -27,16 +27,53 @@ a good option.
 
 ## Installation
 
-### New project
+### Global (recommended)
+
+Install once in `~/.claude/` and every Claude Code session gets notifications automatically.
+
+1. Copy the hook script:
 
 ```bash
-mkdir -p your-project/.claude/hooks
-cp cc-notify.sh your-project/.claude/hooks/
-chmod +x your-project/.claude/hooks/cc-notify.sh
-cp settings.json your-project/.claude/settings.json
+mkdir -p ~/.claude/hooks
+cp cc-notify.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/cc-notify.sh
 ```
 
-### Existing project
+2. Merge the hooks config into `~/.claude/settings.json`. Add the `"Notification"` and `"Stop"` entries alongside any existing keys:
+
+```json
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/cc-notify.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/cc-notify.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Per-project
+
+If you prefer to scope notifications to a single project:
 
 1. Copy the hook script:
 
@@ -46,7 +83,7 @@ cp cc-notify.sh your-project/.claude/hooks/
 chmod +x your-project/.claude/hooks/cc-notify.sh
 ```
 
-2. Merge the hooks config into your existing `.claude/settings.json`. If you already have a `"hooks"` key, add the `"Notification"` and `"Stop"` entries from `settings.json` alongside your existing hooks:
+2. Merge the hooks config into your project's `.claude/settings.json`, using `$CLAUDE_PROJECT_DIR` instead of `$HOME`:
 
 ```json
 {
@@ -80,4 +117,4 @@ chmod +x your-project/.claude/hooks/cc-notify.sh
 
 ### Git worktrees
 
-The script uses `basename "$CWD"` for the notification label, so each worktree gets a distinct tag automatically (e.g., `[my-project-wt1]`, `[my-project-wt2]`). Install once in the main worktree — since `.claude/` lives in the git directory, all worktrees share the same hooks.
+The script uses `basename "$CWD"` for the notification label, so each worktree gets a distinct tag automatically (e.g., `[my-project-wt1]`, `[my-project-wt2]`). With the global install, worktrees just work. With per-project install, commit `.claude/hooks/cc-notify.sh` and `.claude/settings.json` so all worktrees share them.
