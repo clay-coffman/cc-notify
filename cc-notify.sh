@@ -5,6 +5,26 @@
 # Reads hook JSON from stdin, sends a KDE desktop notification.
 
 INPUT=$(cat)
+
+# Skip notification if the tmux window running this session is currently active
+if [ -n "$TMUX" ]; then
+  # Get the active window and pane in the current tmux session
+  active_pane=$(tmux display-message -p '#{pane_id}' 2>/dev/null)
+  # Find which pane owns this process by walking up the process tree
+  pid=$$
+  my_pane=""
+  while [ "$pid" -gt 1 ] 2>/dev/null; do
+    my_pane=$(tmux list-panes -a -F '#{pane_id} #{pane_pid}' 2>/dev/null | awk -v p="$pid" '$2 == p {print $1; exit}')
+    [ -n "$my_pane" ] && break
+    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+  done
+  if [ -n "$my_pane" ]; then
+    # Check if that pane's window is the active one in its session
+    is_active=$(tmux display-message -t "$my_pane" -p '#{window_active}' 2>/dev/null)
+    [ "$is_active" = "1" ] && exit 0
+  fi
+fi
+
 EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // "unknown"')
 
 # Identify which worktree/window this is from
